@@ -13,6 +13,8 @@
 		00A674271D95143600046E9D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 00A674251D95143600046E9D /* Main.storyboard */; };
 		00A674291D95143600046E9D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 00A674281D95143600046E9D /* Assets.xcassets */; };
 		00A6742C1D95143600046E9D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 00A6742A1D95143600046E9D /* LaunchScreen.storyboard */; };
+		00A674381D95146A00046E9D /* BSKSuperView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00A674351D95146A00046E9D /* BSKSuperView.m */; };
+		00A674391D95146A00046E9D /* BSKTimePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 00A674371D95146A00046E9D /* BSKTimePicker.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +28,10 @@
 		00A674281D95143600046E9D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		00A6742B1D95143600046E9D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		00A6742D1D95143600046E9D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		00A674341D95146A00046E9D /* BSKSuperView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BSKSuperView.h; sourceTree = "<group>"; };
+		00A674351D95146A00046E9D /* BSKSuperView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BSKSuperView.m; sourceTree = "<group>"; };
+		00A674361D95146A00046E9D /* BSKTimePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BSKTimePicker.h; sourceTree = "<group>"; };
+		00A674371D95146A00046E9D /* BSKTimePicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BSKTimePicker.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -42,7 +48,8 @@
 		00A674101D95143600046E9D = {
 			isa = PBXGroup;
 			children = (
-				00A6741B1D95143600046E9D /* BSKTimePicker */,
+				00A674331D95146A00046E9D /* BSKTimerPicker */,
+				00A6741B1D95143600046E9D /* Demo */,
 				00A6741A1D95143600046E9D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -55,7 +62,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		00A6741B1D95143600046E9D /* BSKTimePicker */ = {
+		00A6741B1D95143600046E9D /* Demo */ = {
 			isa = PBXGroup;
 			children = (
 				00A6741F1D95143600046E9D /* AppDelegate.h */,
@@ -68,6 +75,7 @@
 				00A6742D1D95143600046E9D /* Info.plist */,
 				00A6741C1D95143600046E9D /* Supporting Files */,
 			);
+			name = Demo;
 			path = BSKTimePicker;
 			sourceTree = "<group>";
 		};
@@ -77,6 +85,17 @@
 				00A6741D1D95143600046E9D /* main.m */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		00A674331D95146A00046E9D /* BSKTimerPicker */ = {
+			isa = PBXGroup;
+			children = (
+				00A674341D95146A00046E9D /* BSKSuperView.h */,
+				00A674351D95146A00046E9D /* BSKSuperView.m */,
+				00A674361D95146A00046E9D /* BSKTimePicker.h */,
+				00A674371D95146A00046E9D /* BSKTimePicker.m */,
+			);
+			path = BSKTimerPicker;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -153,6 +172,8 @@
 				00A674241D95143600046E9D /* ViewController.m in Sources */,
 				00A674211D95143600046E9D /* AppDelegate.m in Sources */,
 				00A6741E1D95143600046E9D /* main.m in Sources */,
+				00A674381D95146A00046E9D /* BSKSuperView.m in Sources */,
+				00A674391D95146A00046E9D /* BSKTimePicker.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
