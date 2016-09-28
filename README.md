@@ -1,6 +1,8 @@
 # BSKTimePicker
 a beautiful timePicker for iOS 
 
+Demo工程采用Xcode8创建，请用Xcode8打开，如果你使用的是Xcode7，请将BSKTimePicker文件夹导入到你的工程中就可以使用了。
+
 Gif图中可能由于浏览器性能导致不流畅，实际运行不会卡顿。
 
 ![img](./demo.gif)
