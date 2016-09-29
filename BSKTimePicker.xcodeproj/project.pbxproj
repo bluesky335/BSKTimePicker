@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0010E0EF1D9BB0A8004608BD /* timer_turn.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0010E0EE1D9BB0A8004608BD /* timer_turn.wav */; };
 		00A6743F1D9535AB00046E9D /* BSKSuperView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00A6743C1D9535AB00046E9D /* BSKSuperView.m */; };
 		00A674401D9535AB00046E9D /* BSKTimePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 00A6743E1D9535AB00046E9D /* BSKTimePicker.m */; };
 		00A6744D1D9535B400046E9D /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 00A674431D9535B400046E9D /* AppDelegate.m */; };
@@ -19,6 +20,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0010E0EE1D9BB0A8004608BD /* timer_turn.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = timer_turn.wav; sourceTree = "<group>"; };
 		00A674191D95143600046E9D /* BSKTimePicker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BSKTimePicker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		00A6743B1D9535AB00046E9D /* BSKSuperView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BSKSuperView.h; sourceTree = "<group>"; };
 		00A6743C1D9535AB00046E9D /* BSKSuperView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BSKSuperView.m; sourceTree = "<group>"; };
@@ -46,6 +48,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0010E0ED1D9BB0A8004608BD /* media */ = {
+			isa = PBXGroup;
+			children = (
+				0010E0EE1D9BB0A8004608BD /* timer_turn.wav */,
+			);
+			path = media;
+			sourceTree = "<group>";
+		};
 		00A674101D95143600046E9D = {
 			isa = PBXGroup;
 			children = (
@@ -66,6 +76,7 @@
 		00A6743A1D9535AB00046E9D /* BSKTimePicker */ = {
 			isa = PBXGroup;
 			children = (
+				0010E0ED1D9BB0A8004608BD /* media */,
 				00A6743B1D9535AB00046E9D /* BSKSuperView.h */,
 				00A6743C1D9535AB00046E9D /* BSKSuperView.m */,
 				00A6743D1D9535AB00046E9D /* BSKTimePicker.h */,
@@ -77,12 +88,12 @@
 		00A674411D9535B400046E9D /* Demo */ = {
 			isa = PBXGroup;
 			children = (
+				00A674491D9535B400046E9D /* Info.plist */,
 				00A674421D9535B400046E9D /* AppDelegate.h */,
 				00A674431D9535B400046E9D /* AppDelegate.m */,
 				00A674441D9535B400046E9D /* Assets.xcassets */,
 				00A674451D9535B400046E9D /* LaunchScreen.storyboard */,
 				00A674471D9535B400046E9D /* Main.storyboard */,
-				00A674491D9535B400046E9D /* Info.plist */,
 				00A6744A1D9535B400046E9D /* main.m */,
 				00A6744B1D9535B400046E9D /* ViewController.h */,
 				00A6744C1D9535B400046E9D /* ViewController.m */,
@@ -149,6 +160,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				00A674511D9535B400046E9D /* Info.plist in Resources */,
+				0010E0EF1D9BB0A8004608BD /* timer_turn.wav in Resources */,
 				00A674501D9535B400046E9D /* Main.storyboard in Resources */,
 				00A6744E1D9535B400046E9D /* Assets.xcassets in Resources */,
 				00A6744F1D9535B400046E9D /* LaunchScreen.storyboard in Resources */,
@@ -323,6 +335,7 @@
 				00A674321D95143600046E9D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

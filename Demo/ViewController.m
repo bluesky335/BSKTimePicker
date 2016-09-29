@@ -19,7 +19,7 @@
     [super viewDidLoad];
     
     self.view.backgroundColor= [UIColor colorWithRed:0.0f  green:128.0f/255.0f blue:128.0f/255.0f alpha:1.0];
-    self.timePicker = [[BSKTimePicker alloc]initWithFrame:CGRectMake(50, 100, 300, 300)];
+    self.timePicker = [[BSKTimePicker alloc]initWithFrame:CGRectMake(50, 100, 200, 200)];
     self.timePicker.center = self.view.center;
     self.timePicker.minutesPointColor = [UIColor colorWithRed:1.0f green:87.0f/255.0f blue:42.0f/255.0f alpha:1.0f];
     self.timePicker.secondsPointColor = [UIColor colorWithRed:0.0f green:150.0f/255.0f blue:1.0f alpha:1.0f];
@@ -36,6 +36,25 @@
     self.timeLabel.frame = CGRectMake(0, 50, 400, 50);
     [self.view addSubview:self.timeLabel];
     
+    UIButton * button = [UIButton buttonWithType:UIButtonTypeSystem];
+    button.frame = CGRectMake(100, 100, 100, 100);
+    [button setTitle:@"+" forState:UIControlStateNormal];
+    [button addTarget:self action:@selector(jia) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button];
+    UIButton * button2 = [UIButton buttonWithType:UIButtonTypeSystem];
+    button2.frame = CGRectMake(200, 100, 100, 100);
+    [button2 setTitle:@"-" forState:UIControlStateNormal];
+    [button2 addTarget:self action:@selector(jian) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button2];
+    
+}
+
+-(void)jia{
+    self.timePicker.seconds+=1;
+}
+-(void)jian{
+    
+    self.timePicker.seconds-=1;
 }
 
 -(void)BSKTimePiker:(BSKTimePicker *)timePicker DidSelectedTimeWithHours:(NSInteger)hours Minutes:(NSInteger)minutes Seconds:(NSInteger)seconds{

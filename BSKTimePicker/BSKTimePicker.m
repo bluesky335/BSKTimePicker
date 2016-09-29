@@ -9,6 +9,7 @@
 #define BSKABS(x) ((x)>0?(x):-1*(x))
 #import "BSKTimePicker.h"
 #import "BSKSuperView.h"
+#import <AVFoundation/AVFoundation.h>
 @interface BSKTimePicker ()
 {
     CGFloat minutesViewR;//10/200*superViewWidth
@@ -21,10 +22,8 @@
 @property(nonatomic,strong)UIView * minutesSuperView;
 @property(nonatomic,strong)UIView * secondsView;
 @property(nonatomic,strong)BSKSuperView * secondsSuperView;
-@property (nonatomic,assign) NSInteger hours;//小时
-@property (nonatomic,assign) NSInteger minutes;//分钟
-@property (nonatomic,assign) NSInteger seconds;//秒
-@property (nonnull,strong)UILabel * timeLabel;
+@property (nonatomic,strong) UILabel * timeLabel;
+@property (nonatomic,strong) AVAudioPlayer * player;
 
 @end
 
@@ -32,12 +31,22 @@
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
+
     self = [super initWithFrame:frame];
     
     if (self) {
+        self.isSelecting = NO;
+        NSString * filePath = [[NSBundle mainBundle] pathForResource:@"timer_turn" ofType:@"wav"];
+        NSURL * fileURL = [NSURL fileURLWithPath:filePath];
+        self.player = [[AVAudioPlayer alloc]initWithContentsOfURL:fileURL fileTypeHint:@"wav" error:NULL];
+        [self.player prepareToPlay];
         [self initializeColors];
         [self initializeUIWithFrame:frame];
-
+        
+        UIPanGestureRecognizer * minutesPangesture = [[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(minutesPanAction:)];
+        [self.minutesView addGestureRecognizer:minutesPangesture];
+        UIPanGestureRecognizer * secondsPangesture = [[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(secondPanAction:)];
+        [self.secondsView addGestureRecognizer:secondsPangesture];
     }
     return self;
 }
@@ -57,7 +66,6 @@
     // @property (nonatomic,strong) UIColor * secondsPointColor;//秒钟圆点的颜色
     // @property (nonatomic,strong) UIColor * minutesCircleColor;//分钟圆圈的颜色
     // @property (nonatomic,strong) UIColor * secondsCircleColor;//秒钟圆圈的颜色
-    
     self.textColor = [UIColor blackColor];
     self.minutesPointColor = [UIColor redColor];
     self.secondsPointColor = [UIColor blueColor];
@@ -69,39 +77,24 @@
     
     self.backgroundColor = [UIColor clearColor];
     
-    self.minutesSuperView = [[UIView alloc]initWithFrame:self.bounds];
+    self.minutesSuperView = [[UIView alloc]init];
     self.minutesSuperView.backgroundColor = [UIColor clearColor];
-    
-    
-    self.minutesView = [[UIView alloc]initWithFrame:CGRectMake(self.centerPoint.x-minutesViewR, minutesViewY+(frame.size.height/2-superViewWidth/2), minutesViewR*2, minutesViewR*2)];
-    self.minutesView.layer.cornerRadius = minutesViewR;
-    
-    
-    self.minutesView.backgroundColor = self.minutesPointColor;
+    self.minutesView = [[UIView alloc]init];
+
     [self addSubview:self.minutesSuperView];
     [self.minutesSuperView addSubview:self.minutesView];
     
     
-    self.secondsSuperView = [[BSKSuperView alloc]initWithFrame:self.bounds];
+    self.secondsSuperView = [[BSKSuperView alloc]init];
     self.secondsSuperView.backgroundColor = [UIColor clearColor];
     
-    
-    self.secondsView = [[UIView alloc]initWithFrame:CGRectMake(self.centerPoint.x-secondsViewR, secondsViewY+(frame.size.height/2-superViewWidth/2), secondsViewR*2, secondsViewR*2)];
-    self.secondsView.layer.cornerRadius = secondsViewR;
-    self.secondsView.backgroundColor = self.secondsPointColor;
-    
-    
+    self.secondsView = [[UIView alloc]init];
     [self addSubview:self.secondsSuperView];
     [self.secondsSuperView addSubview:self.secondsView];
     
     self.timeLabel = [[UILabel alloc]init];
     self.timeLabel.text = @"00:00:00";
-    self.timeLabel.textColor = self.textColor;
     self.timeLabel.textAlignment = NSTextAlignmentCenter;
-    self.timeLabel.font = [UIFont systemFontOfSize:(25.0/200.0)*superViewWidth];
-//    [self.timeLabel sizeToFit];
-//    self.timeLabel.center = self.centerPoint;
-    self.timeLabel.frame = self.bounds;
     self.timeLabel.userInteractionEnabled = NO;
     [self addSubview:self.timeLabel];
 }
@@ -109,6 +102,20 @@
 
 - (void)drawRect:(CGRect)rect {
     
+    self.minutesView.frame = CGRectMake(self.centerPoint.x-minutesViewR, minutesViewY+(rect.size.height/2-superViewWidth/2), minutesViewR*2, minutesViewR*2);
+    self.minutesView.layer.cornerRadius = minutesViewR;
+    self.minutesView.backgroundColor = self.minutesPointColor;
+    
+    self.secondsView.frame = CGRectMake(self.centerPoint.x-secondsViewR, secondsViewY+(rect.size.height/2-superViewWidth/2), secondsViewR*2, secondsViewR*2);
+    self.secondsView.layer.cornerRadius = secondsViewR;
+    self.secondsView.backgroundColor = self.secondsPointColor;
+    
+    self.secondsSuperView.frame = self.bounds;
+    self.minutesSuperView.frame = self.bounds;
+    self.timeLabel.font = [UIFont systemFontOfSize:(25.0/200.0)*superViewWidth];
+    self.timeLabel.frame = self.bounds;
+    self.timeLabel.textColor = self.textColor;
+
     [self.minutesCircleColor set]; //设置线条颜色
     UIBezierPath* minutesPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(rect.size.width/2-(superViewWidth/2-minutesViewY*2), rect.size.height/2-(superViewWidth/2-minutesViewY*2), superViewWidth-minutesViewY*4, superViewWidth-minutesViewY*4)];//画圆
     minutesPath.lineWidth = 1;
@@ -126,140 +133,169 @@
 
 #pragma mark touchEvent
 
+-(void)minutesPanAction:(UIPanGestureRecognizer *)pangesture{
+    switch (pangesture.state) {
+        case UIGestureRecognizerStateBegan:{
+            self.isSelecting = YES;
+            [UIView animateWithDuration:0.1 animations:^{
+                _minutesView.transform = CGAffineTransformMakeScale(1.5, 1.5);
+            }];
+        }
+            break;
+        case UIGestureRecognizerStateChanged:
+        {
+            CGPoint p =[pangesture locationInView:self];
+            CGPoint vector1 = [self getVectorPointWithPoint:self.centerPoint Point:p];
+            CGPoint vector2 = [self getVectorPointWithPoint:CGPointMake(0, 0) Point:CGPointMake(0, -1)];
+            CGFloat angle=[self getAngleWithVectorPoint:vector2 VectorPoint:vector1];
+            NSInteger theTime = (NSInteger)angle/6.0;
+            BOOL flag = YES;
+            if(self.minutes!=theTime){
+                if (BSKABS(theTime - _minutes)>=30) {
+                    if (theTime-_minutes>0) {
+                        while (_minutes!=0) {
+                            self.minutes = self.minutes-1;
+                        }
+                        if (self.hours!=0) {
+                            self.minutes = 59;
+                        }else{
+                            flag = NO;
+                        }
+                    }else{
+                        while (_minutes!=59) {
+                            self.minutes = self.minutes+1;
+                        }
+                        self.minutes = 0;
+                    }
+                }
+                if (flag) {
+                    if (theTime-_minutes>0) {
+                        while (_minutes!=theTime) {
+                            self.minutes = self.minutes+1;
+                        }
+                    }else{
+                        while (_minutes!=theTime) {
+                            self.minutes = self.minutes-1;
+                        }
+                    }
+                }
+                
+            }
+            if (self.hours ==0 && self.minutes == 0) {
+                [UIView animateWithDuration:0.1 animations:^{
+                    self.minutesSuperView.layer.affineTransform = CGAffineTransformMakeRotation(0);
+                }];
+            }else{
+                [UIView animateWithDuration:0.1 animations:^{
+                    self.minutesSuperView.layer.affineTransform = CGAffineTransformMakeRotation((angle/180.0)*M_PI);
+                }];
+                
+            }
+        }
+            break;
+        case UIGestureRecognizerStateEnded:
+        default:
+            [self endSelected];
+            break;
+    }
+}
+
+-(void)secondPanAction:(UIPanGestureRecognizer *)pangesture{
+    switch (pangesture.state) {
+        case UIGestureRecognizerStateBegan:{
+            self.isSelecting = YES;
+            [UIView animateWithDuration:0.1 animations:^{
+                _secondsView.transform = CGAffineTransformMakeScale(1.5, 1.5);
+            }];
+        }
+            break;
+        case UIGestureRecognizerStateChanged:
+        {
+            CGPoint p =[pangesture locationInView:self];
+            CGPoint vector1 = [self getVectorPointWithPoint:self.centerPoint Point:p];
+            CGPoint vector2 = [self getVectorPointWithPoint:CGPointMake(0, 0) Point:CGPointMake(0, -1)];
+            CGFloat angle=[self getAngleWithVectorPoint:vector2 VectorPoint:vector1];
+            NSInteger theTime = (NSInteger)angle/6.0;
+            BOOL flag = YES;
+            if(self.seconds!=theTime){
+                if (BSKABS(theTime - _seconds)>=30) {
+                    if (theTime-_seconds>0) {
+                        
+                        while (_seconds!=0) {
+                            self.seconds = self.seconds-1;
+                        }
+                        if (self.hours == 0&&self.minutes==0) {
+                            flag = NO;
+                        }else{
+                            self.seconds = 59;
+                        }
+                        
+                    }else{
+                        while (_seconds!=59) {
+                            self.seconds = self.seconds+1;
+                        }
+                        self.seconds = 0;
+                    }
+                }
+                if (flag) {
+                    if (theTime-_seconds>0) {
+                        while (_seconds!=theTime) {
+                            self.seconds = self.seconds+1;
+                        }
+                    }else{
+                        while (_seconds!=theTime) {
+                            self.seconds = self.seconds-1;
+                        }
+                    }
+                }
+                
+            }
+            if (self.seconds==0&&self.minutes==0&&self.hours==0) {
+                [UIView animateWithDuration:0.1 animations:^{
+                    self.secondsSuperView.layer.affineTransform = CGAffineTransformMakeRotation(0);
+                }];
+            }else{
+                [UIView animateWithDuration:0.1 animations:^{
+                    self.secondsSuperView.layer.affineTransform = CGAffineTransformMakeRotation((angle/180.0)*M_PI);
+                }];
+            }
+        }
+            break;
+        case UIGestureRecognizerStateEnded:
+        default:
+            [self endSelected];
+            break;
+    }
+}
+
+
 -(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
     UITouch * touch = [[event touchesForView:self.minutesView] allObjects].firstObject;
+    
+    UITouch * touch2 = [[event touchesForView:self.secondsView] allObjects].firstObject;
     
     if(touch){
         [UIView animateWithDuration:0.1 animations:^{
             _minutesView.transform = CGAffineTransformMakeScale(1.5, 1.5);
         }];
-    }
-    UITouch * touch2 = [[event touchesForView:self.secondsView] allObjects].firstObject;
-    
-    if(touch2){
+    }else if(touch2){
         [UIView animateWithDuration:0.1 animations:^{
             _secondsView.transform = CGAffineTransformMakeScale(1.5, 1.5);
         }];
     }
 }
--(void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
-    
-    UITouch * touch = [[event touchesForView:self.minutesView] allObjects].firstObject;
-    if (touch) {
-        CGPoint p = [touch locationInView:self];
-        
-        CGPoint vector1 = [self getVectorPointWithPoint:self.centerPoint Point:p];
-        CGPoint vector2 = [self getVectorPointWithPoint:CGPointMake(0, 0) Point:CGPointMake(0, -1)];
-        CGFloat angle=[self getAngleWithVectorPoint:vector2 VectorPoint:vector1];
-        NSInteger theTime = (NSInteger)angle/6.0;
-        BOOL flag = YES;
-        if(self.minutes!=theTime){
-            if (BSKABS(theTime - _minutes)>=30) {
-                if (theTime-_minutes>0) {
-                    while (_minutes!=0) {
-                        self.minutes = self.minutes-1;
-                    }
-                    if (self.hours!=0) {
-                        self.minutes = 59;
-                    }else{
-                        flag = NO;
-                    }
-                }else{
-                    while (_minutes!=59) {
-                        self.minutes = self.minutes+1;
-                    }
-                    self.minutes = 0;
-                }
-            }
-            if (flag) {
-                if (theTime-_minutes>0) {
-                        while (_minutes!=theTime) {
-                            self.minutes = self.minutes+1;
-                        }
-                }else{
-                        while (_minutes!=theTime) {
-                            self.minutes = self.minutes-1;
-                        }
-                }
-            }
-            
-        }
-        if (self.hours ==0 && self.minutes == 0) {
-            [UIView animateWithDuration:0.1 animations:^{
-                self.minutesSuperView.layer.affineTransform = CGAffineTransformMakeRotation(0);
-            }];
-        }else{
-            [UIView animateWithDuration:0.1 animations:^{
-                self.minutesSuperView.layer.affineTransform = CGAffineTransformMakeRotation((angle/180.0)*M_PI);
-            }];
-            
-        }
-        
-
-        
-    }
-    
-    
-    UITouch * touch2 = [[event touchesForView:self.secondsView] allObjects].firstObject;
-    if (touch2) {
-        CGPoint p = [touch2 locationInView:self];
-        
-        CGPoint vector1 = [self getVectorPointWithPoint:self.centerPoint Point:p];
-        CGPoint vector2 = [self getVectorPointWithPoint:CGPointMake(0, 0) Point:CGPointMake(0, -1)];
-        CGFloat angle=[self getAngleWithVectorPoint:vector2 VectorPoint:vector1];
-        NSInteger theTime = (NSInteger)angle/6.0;
-        BOOL flag = YES;
-        if(self.seconds!=theTime){
-            if (BSKABS(theTime - _seconds)>=30) {
-                if (theTime-_seconds>0) {
-                    
-                    while (_seconds!=0) {
-                        self.seconds = self.seconds-1;
-                    }
-                    if (self.hours == 0&&self.minutes==0) {
-                        flag = NO;
-                    }else{
-                        self.seconds = 59;
-                    }
-                    
-                }else{
-                    while (_seconds!=59) {
-                        self.seconds = self.seconds+1;
-                    }
-                    self.seconds = 0;
-                }
-            }
-            if (flag) {
-                if (theTime-_seconds>0) {
-                    while (_seconds!=theTime) {
-                        self.seconds = self.seconds+1;
-                    }
-                }else{
-                    while (_seconds!=theTime) {
-                        self.seconds = self.seconds-1;
-                    }
-                }
-            }
-            
-        }
-        if (self.seconds==0&&self.minutes==0&&self.hours==0) {
-            [UIView animateWithDuration:0.1 animations:^{
-                self.secondsSuperView.layer.affineTransform = CGAffineTransformMakeRotation(0);
-            }];
-        }else{
-            [UIView animateWithDuration:0.1 animations:^{
-                self.secondsSuperView.layer.affineTransform = CGAffineTransformMakeRotation((angle/180.0)*M_PI);
-            }];
-        }
-        
-
-    }
-
-}
-
-
 
 -(void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
+    [UIView animateWithDuration:0.1 animations:^{
+        _minutesView.transform = CGAffineTransformMakeScale(1, 1);
+    }];
+    
+    [UIView animateWithDuration:0.1 animations:^{
+        _secondsView.transform = CGAffineTransformMakeScale(1, 1);
+    }];
+}
+
+-(void)endSelected{
     [UIView animateWithDuration:0.1 animations:^{
         _minutesView.transform = CGAffineTransformMakeScale(1, 1);
     }];
@@ -272,14 +308,26 @@
         self.secondsSuperView.layer.affineTransform = CGAffineTransformMakeRotation((self.seconds/30.0)*M_PI);
         self.minutesSuperView.layer.affineTransform = CGAffineTransformMakeRotation((self.minutes/30.0)*M_PI);
     }];
-    if (self.delegate) {
+    if (self.delegate&&self.isSelecting) {
         if ([self.delegate respondsToSelector:@selector(BSKTimePiker:DidSelectedTimeWithHours:Minutes:Seconds:)]) {
             [self.delegate BSKTimePiker:self DidSelectedTimeWithHours:self.hours Minutes:self.minutes Seconds:self.seconds];
         }
     }
+    self.isSelecting = NO;
 }
 
 #pragma mark setter
+
+-(void)setIsSelecting:(BOOL)isSelecting{
+    if (_isSelecting!=isSelecting) {
+        if (self.delegate) {
+            if ([self.delegate respondsToSelector:@selector(BSKTimePicker:isSelectingChanged:)]) {
+                [self.delegate BSKTimePicker:self isSelectingChanged:isSelecting];
+            }
+        }
+    }
+    _isSelecting=isSelecting;
+}
 
 -(void)setTextColor:(UIColor *)textColor{
     _textColor = textColor;
@@ -323,13 +371,20 @@
     secondsViewR=7.0/200.0*superViewWidth;
     minutesViewY=10.0/200.0*superViewWidth;
     secondsViewY=35.0/200.0*superViewWidth;
+    [self setNeedsDisplay];
 }
 
 -(void)setMinutes:(NSInteger)curentTimePoint{
     if (curentTimePoint <0) {
-        curentTimePoint =0;
-    }
-    if(self.minutes == 59 && curentTimePoint == 0){
+        if(self.hours!=0){
+            self.hours-= (labs(curentTimePoint)/60+1);
+            curentTimePoint = 60 - (labs(curentTimePoint)%60);
+        }else{
+            curentTimePoint = 0;
+        }
+    }else if (curentTimePoint>=60) {
+        self.hours += curentTimePoint/60;
+    }else if(self.minutes == 59 && curentTimePoint == 0){
         self.hours+=1;
     }
     else if(self.minutes == 0 && curentTimePoint == 59){
@@ -338,20 +393,32 @@
         }
         
     }
-    _minutes = curentTimePoint;
+    _minutes = labs(curentTimePoint)%60;
     self.timeLabel.text = [NSString stringWithFormat:@"%.2ld:%.2ld:%.2ld",self.hours,_minutes,_seconds];
     if (self.delegate) {
         if ([self.delegate respondsToSelector:@selector(BSKTimePiker:timeDidChangedWithHours:Minutes:Seconds:)]) {
             [self.delegate BSKTimePiker:self timeDidChangedWithHours:self.hours Minutes:self.minutes Seconds:self.seconds];
         }
     }
+    if (!self.isSelecting) {
+        [UIView animateWithDuration:0.1 animations:^{
+            self.minutesSuperView.layer.affineTransform = CGAffineTransformMakeRotation((_minutes/30.0)*M_PI);
+        }];
+    }
+    [self playSound];
     NSLog(@"%.2ld:%.2ld:%.2ld",self.hours,_minutes,_seconds);
 }
 -(void)setSeconds:(NSInteger)curentSecondsPoint{
     if (curentSecondsPoint<0) {
-        curentSecondsPoint =0;
-    }
-    if(self.seconds == 59 && curentSecondsPoint == 0){
+        if (self.minutes!=0||self.hours!=0) {
+            self.minutes-=(labs(curentSecondsPoint)/60+1);
+            curentSecondsPoint = 60-(labs(curentSecondsPoint)%60);
+        }else{
+            curentSecondsPoint = 0;
+        }
+    }else if (curentSecondsPoint>=60) {
+        self.minutes += curentSecondsPoint/60;
+    }else if(self.seconds == 59 && curentSecondsPoint == 0){
         if (self.minutes==59) {
             self.minutes=0;
         }else{
@@ -367,7 +434,7 @@
             self.minutes -=1;
         }
     }
-    _seconds = curentSecondsPoint;
+    _seconds = labs(curentSecondsPoint)%60;
     [UIView animateWithDuration:0.1 animations:^{
         self.minutesSuperView.layer.affineTransform = CGAffineTransformMakeRotation((self.minutes/30.0)*M_PI);
     }];
@@ -377,12 +444,31 @@
             [self.delegate BSKTimePiker:self timeDidChangedWithHours:self.hours Minutes:self.minutes Seconds:self.seconds];
         }
     }
+    if (!self.isSelecting) {
+        [UIView animateWithDuration:0.1 animations:^{
+            self.secondsSuperView.layer.affineTransform = CGAffineTransformMakeRotation((_seconds/30.0)*M_PI);
+        }];
+    }
+    [self playSound];
     NSLog(@"%.2ld:%.2ld:%.2ld",self.hours,_minutes,_seconds);
+}
+
+-(void)setHours:(NSInteger)hours{
+    if (hours<0) {
+        hours=0;
+    }
+    _hours = hours;
 }
 
 
 
 #pragma mark toolFunction
+
+-(void)playSound{
+//    if (!self.player.isPlaying) {
+        [self.player play];
+//    }
+}
 
 
 -(CGPoint) centerPoint{
